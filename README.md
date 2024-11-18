@@ -5,7 +5,7 @@ A collection of Python projects created with the help of Anthropic's Claude AI.
 ## Projects
 
 ### 1. Dinosaur Game
-A simple yet addictive game inspired by Chrome's offline T-Rex runner. Jump over obstacles and try to achieve the highest score!
+A simple yet addictive game inspired by Chrome's offline T-Rex runner (but with a poop emoji XD). Jump over obstacles and try to achieve the highest score!
 
 [Go to Dinosaur Game →](./dinosaur_game)
 
