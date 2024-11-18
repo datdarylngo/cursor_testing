@@ -30,15 +30,16 @@ class DinosaurGame:
         # Power-up properties
         self.powerups = []
         self.powerup_timer = 0
-        self.powerup_duration = 300  # 5 seconds at 60 FPS
+        self.powerup_duration = 300
         self.is_powered_up = False
-        self.powerup_spawn_chance = 0.002  # Reduced from 0.01 to 0.002 (0.2% chance per frame)
+        self.powerup_spawn_chance = 0.08  # Initial spawn chance
 
         self.reset_game()
 
     def reset_game(self):
         # Game objects
         self.player = Dinosaur(50, 300)
+        self.player.poop_count = 3  # Start with 3 poops
         self.obstacles = []
         
         # Game state
@@ -75,36 +76,41 @@ class DinosaurGame:
                         self.in_menu = False
                         self.reset_game()
                 
-                elif event.key == pygame.K_f and self.game_active:
-                    self.player.apply_fart_boost()
+                elif event.key == pygame.K_LSHIFT and self.game_active:
+                    self.player.apply_boost()
                 
                 elif event.key == pygame.K_r and not self.game_active and not self.in_menu:
                     self.game_active = True
                     self.reset_game()
-        
+            
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_SPACE and self.game_active:
                     if self.player.is_charging:
                         self.player.release_jump()
         
-        # Check for gliding - only glide while G is held
+        # Check for gliding - only glide while SPACE is held
         if self.game_active:
-            if keys[pygame.K_g]:
+            if keys[pygame.K_SPACE]:
                 self.player.start_glide()
             else:
                 self.player.stop_glide()
 
     def spawn_obstacle(self):
         if self.spawn_timer <= 0:
-            # Increase spawn chance as score increases
-            spawn_chance = 0.3 + (self.score / 1000)  # Gradually increase spawn rate
-            spawn_chance = min(0.5, spawn_chance)  # Cap at 50% chance
+            # Adjust spawn chance based on score - decrease at higher scores
+            base_spawn_chance = 0.3
+            score_factor = self.score / 2000  # Reduced from 1000 to make it scale slower
+            spawn_chance = base_spawn_chance + (0.2 - score_factor)  # Decreases as score increases
+            spawn_chance = max(0.15, min(0.5, spawn_chance))  # Cap between 15% and 50%
             
             if random.random() < spawn_chance:
-                # Sometimes spawn multiple cacti in a group
-                if random.random() < 0.2:  # 20% chance for group spawn
+                # Reduce group spawn chance at higher scores
+                group_spawn_chance = 0.2 - (self.score / 5000)  # Reduces group spawns later
+                group_spawn_chance = max(0.05, group_spawn_chance)  # Minimum 5% chance
+                
+                if random.random() < group_spawn_chance:
                     num_cacti = random.randint(2, 3)
-                    spacing = random.randint(60, 100)  # Random spacing between grouped cacti
+                    spacing = random.randint(60, 100)
                     
                     for i in range(num_cacti):
                         cactus = Cactus(self.screen_width + (i * spacing))
@@ -112,16 +118,20 @@ class DinosaurGame:
                 else:
                     self.obstacles.append(Cactus(self.screen_width))
                 
-                # Decrease minimum spawn time as score increases
-                self.spawn_timer = self.min_spawn_time - (self.score // 50)  # Faster spawn rate
-                self.spawn_timer = max(20, self.spawn_timer)  # Don't go below 20 frames
+                # Increase minimum spawn time at higher scores
+                base_spawn_time = self.min_spawn_time - (self.score // 100)
+                self.spawn_timer = min(80, max(30, base_spawn_time))  # Keep between 30 and 80
         else:
             self.spawn_timer -= 1
 
     def spawn_powerup(self):
-        if not self.powerups and not self.is_powered_up:  # Only spawn if no powerups exist
-            if random.random() < self.powerup_spawn_chance:
-                y_pos = random.randint(100, 250)  # Random height between these values
+        if not self.powerups and not self.is_powered_up:
+            # Reduce star spawn chance as score increases
+            adjusted_spawn_chance = self.powerup_spawn_chance * (1 - (self.score / 10000))
+            adjusted_spawn_chance = max(0.01, adjusted_spawn_chance)  # Minimum 1% chance
+            
+            if random.random() < adjusted_spawn_chance:
+                y_pos = random.randint(100, 250)
                 self.powerups.append(Star(self.screen_width, y_pos))
 
     def update(self):
@@ -142,7 +152,9 @@ class DinosaurGame:
             if self.player.rect.colliderect(powerup.rect):
                 self.is_powered_up = True
                 self.powerup_timer = self.powerup_duration
+                self.player.add_poop()  # Add poop instead of fart boost
                 self.powerups.remove(powerup)
+                self.score += 20  # Bonus points for collecting star
             elif powerup.is_off_screen():
                 self.powerups.remove(powerup)
         
@@ -197,8 +209,8 @@ class DinosaurGame:
         
         controls = [
             "SPACE (tap) - Jump over obstacles",
-            "G (hold) - Glide while falling",
-            "F - Fart boost while gliding (once per glide)",
+            "SPACE (hold) - Glide while falling",
+            "SHIFT - Fart boost or power poop (if available)",
             "ESC - Return to menu/Quit game",
             "R - Restart after game over"
         ]
@@ -212,10 +224,11 @@ class DinosaurGame:
         how_to = [
             "1. Press SPACE to start",
             "2. Tap SPACE to jump over cacti",
-            "3. Hold G anytime to glide down",
-            "4. Press F once per glide for fart boost!",
-            "5. Collect stars for invincibility!",
-            "6. Game ends if you hit an obstacle"
+            "3. Hold SPACE anytime to glide down",
+            "4. Collect stars for power poops!",
+            "5. Press SHIFT to fart (while gliding)",
+            "6. Press SHIFT again to use power poop",
+            "7. Game ends if you hit an obstacle"
         ]
         
         # Render controls (left column)
@@ -253,7 +266,7 @@ class DinosaurGame:
     def draw_game(self):
         self.screen.fill((255, 255, 255))
         
-        # Draw ground line
+        # Draw ground line at the same level as dinosaur and cacti (360)
         pygame.draw.line(self.screen, (0, 0, 0), (0, 360), (self.screen_width, 360))
         
         # Draw power-ups
@@ -269,10 +282,10 @@ class DinosaurGame:
             pygame.draw.ellipse(glow_surf, (255, 255, 0, 100), glow_surf.get_rect())
             self.screen.blit(glow_surf, (self.player.rect.x - glow_size, self.player.rect.y - glow_size))
             
-            # Draw power-up timer
+            # Draw power-up timer in center
             timer_width = 100
             timer_height = 10
-            timer_x = self.screen_width // 2 - timer_width // 2
+            timer_x = self.screen_width//2 - timer_width//2  # Centered
             timer_y = 20
             
             # Draw timer background
@@ -289,9 +302,9 @@ class DinosaurGame:
             pygame.draw.rect(self.screen, (0, 0, 0), 
                            (timer_x, timer_y, timer_width, timer_height), 1)
             
-            # Draw "STAR POWER!" text
+            # Draw "STAR POWER!" text under timer
             power_text = self.font.render("STAR POWER!", True, (255, 215, 0))  # Gold color
-            text_rect = power_text.get_rect(midtop=(self.screen_width // 2, timer_y + timer_height + 5))
+            text_rect = power_text.get_rect(midtop=(self.screen_width//2, timer_y + timer_height + 5))
             self.screen.blit(power_text, text_rect)
         
         self.player.draw(self.screen)
@@ -304,10 +317,23 @@ class DinosaurGame:
         score_text = self.font.render(f'Score: {self.score}', True, (0, 0, 0))
         self.screen.blit(score_text, (20, 20))
         
-        # Draw high score
-        high_score_text = self.font.render(f'High Score: {self.high_score}', True, (0, 0, 0))
-        high_score_rect = high_score_text.get_rect(topright=(self.screen_width - 20, 20))
-        self.screen.blit(high_score_text, high_score_rect)
+        # Draw poop counter in left column
+        if self.player.poop_count > 0:
+            # Draw poop icon instead of star
+            poop_rect = self.player.poop_image.get_rect(midtop=(20 + self.player.poop_image.get_width()//2, 60))
+            
+            # Draw counter text
+            counter_text = self.font.render(f'x {self.player.poop_count}', True, (139, 69, 19))  # Brown color
+            counter_rect = counter_text.get_rect(midleft=(poop_rect.right + 10, poop_rect.centery))
+            
+            # Draw "Press SHIFT to use!" text if this is the first poop
+            if self.player.poop_count == 1:
+                hint_text = pygame.font.Font(None, 24).render("Press SHIFT to use!", True, (139, 69, 19))
+                hint_rect = hint_text.get_rect(topleft=(poop_rect.left, poop_rect.bottom + 5))
+                self.screen.blit(hint_text, hint_rect)
+            
+            self.screen.blit(self.player.poop_image, poop_rect)
+            self.screen.blit(counter_text, counter_rect)
 
     def draw_game_over(self):
         # Semi-transparent overlay
