@@ -9,8 +9,10 @@ class Dinosaur:
         self.jump_power = -15
         self.is_jumping = False
         
-        # Create a simple rectangle for now
-        self.rect = pygame.Rect(x, y, 40, 60)
+        # Load and scale image to match hitbox
+        original_image = pygame.image.load('dinosaur_game/assets/dinosaur.png').convert_alpha()
+        self.image = pygame.transform.scale(original_image, (40, 60))  # Match original rectangle size
+        self.rect = self.image.get_rect(topleft=(x, y))
 
     def jump(self):
         if not self.is_jumping:
@@ -30,3 +32,6 @@ class Dinosaur:
 
         # Update rectangle position
         self.rect.y = self.y 
+
+    def draw(self, screen):
+        screen.blit(self.image, self.rect)

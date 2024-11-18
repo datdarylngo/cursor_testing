@@ -87,23 +87,28 @@ class DinosaurGame:
         
         self.spawn_obstacle()
         
-        self.game_speed = 5 + (self.score // 200)
+        self.game_speed = 5 + (self.score // 100)
+        self.min_spawn_time = max(30, 60 - (self.score // 100))
+        
         for obstacle in self.obstacles:
             obstacle.speed = self.game_speed
 
     def draw_menu(self):
         self.screen.fill((255, 255, 255))
         
-        # Draw title
-        title_text = self.title_font.render("Dinosaur Game", True, (0, 0, 0))
-        title_rect = title_text.get_rect(center=(self.screen_width//2, 80))
+        # Calculate vertical spacing
+        padding = 40
+        section_spacing = 20
         
-        # Draw instructions with medium font for better readability
-        instruction_font = pygame.font.Font(None, 36)
+        # Draw title at the top with more space
+        title_text = self.title_font.render("Dinosaur Game", True, (0, 0, 0))
+        title_rect = title_text.get_rect(center=(self.screen_width//2, padding))
         
         # Controls section
         controls_title = self.font.render("Controls:", True, (0, 0, 0))
-        controls_rect = controls_title.get_rect(center=(self.screen_width//2, 140))
+        controls_rect = controls_title.get_rect(
+            center=(self.screen_width//2, title_rect.bottom + section_spacing)
+        )
         
         controls = [
             "SPACE - Jump over obstacles",
@@ -111,9 +116,19 @@ class DinosaurGame:
             "R - Restart after game over"
         ]
         
+        # Render controls
+        control_y = controls_rect.bottom + 10
+        for line in controls:
+            text = self.font.render(line, True, (0, 0, 0))
+            rect = text.get_rect(center=(self.screen_width//2, control_y))
+            self.screen.blit(text, rect)
+            control_y += 30
+        
         # How to Play section
         how_to_title = self.font.render("How to Play:", True, (0, 0, 0))
-        how_to_rect = how_to_title.get_rect(center=(self.screen_width//2, 260))
+        how_to_rect = how_to_title.get_rect(
+            center=(self.screen_width//2, control_y + section_spacing)
+        )
         
         how_to = [
             "1. Press SPACE to start",
@@ -121,25 +136,17 @@ class DinosaurGame:
             "3. Game ends if you hit an obstacle"
         ]
         
-        # Render controls
-        start_y = 170
-        for line in controls:
-            text = instruction_font.render(line, True, (0, 0, 0))
-            rect = text.get_rect(center=(self.screen_width//2, start_y))
-            self.screen.blit(text, rect)
-            start_y += 35
-        
         # Render how to play
-        start_y = 290
+        how_to_y = how_to_rect.bottom + 10
         for line in how_to:
-            text = instruction_font.render(line, True, (0, 0, 0))
-            rect = text.get_rect(center=(self.screen_width//2, start_y))
+            text = self.font.render(line, True, (0, 0, 0))
+            rect = text.get_rect(center=(self.screen_width//2, how_to_y))
             self.screen.blit(text, rect)
-            start_y += 35
+            how_to_y += 30
         
-        # Draw "Press SPACE to Start" at the bottom
+        # Draw "Press SPACE to Start" at the bottom with more spacing
         start_text = self.font.render("Press SPACE to Start", True, (0, 0, 0))
-        start_rect = start_text.get_rect(center=(self.screen_width//2, self.screen_height - 50))
+        start_rect = start_text.get_rect(center=(self.screen_width//2, self.screen_height - padding))
         
         # Draw everything
         self.screen.blit(title_text, title_rect)
@@ -177,11 +184,11 @@ class DinosaurGame:
         pygame.draw.line(self.screen, (0, 0, 0), (0, 360), (self.screen_width, 360))
         
         # Draw player
-        pygame.draw.rect(self.screen, (50, 50, 50), self.player.rect)
+        self.player.draw(self.screen)
         
         # Draw obstacles
         for obstacle in self.obstacles:
-            pygame.draw.rect(self.screen, (100, 100, 100), obstacle.rect)
+            obstacle.draw(self.screen)
         
         # Draw score
         score_text = self.font.render(f'Score: {self.score}', True, (0, 0, 0))
