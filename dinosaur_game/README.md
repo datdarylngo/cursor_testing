@@ -1,7 +1,22 @@
 # Dinosaur Game
 
-A simple dinosaur running game inspired by Chrome's offline T-Rex game.
+A simple yet addictive dinosaur running game inspired by Chrome's offline T-Rex game. Jump over obstacles and try to achieve the highest score!
 
-## Setup
+## 🎮 Game Features
 
-1. Install the required dependencies: 
+- Simple one-button gameplay
+- Progressive difficulty
+- Score tracking
+- Start menu and game over screen
+- Restart functionality
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Python 3.7 or higher
+- pip (Python package installer)
+
+### Installation
+
+1. Clone the repository or download the source code:
