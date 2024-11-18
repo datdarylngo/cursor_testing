@@ -96,18 +96,56 @@ class DinosaurGame:
         
         # Draw title
         title_text = self.title_font.render("Dinosaur Game", True, (0, 0, 0))
-        title_rect = title_text.get_rect(center=(self.screen_width//2, self.screen_height//3))
+        title_rect = title_text.get_rect(center=(self.screen_width//2, 80))
         
-        # Draw instructions
+        # Draw instructions with medium font for better readability
+        instruction_font = pygame.font.Font(None, 36)
+        
+        # Controls section
+        controls_title = self.font.render("Controls:", True, (0, 0, 0))
+        controls_rect = controls_title.get_rect(center=(self.screen_width//2, 140))
+        
+        controls = [
+            "SPACE - Jump over obstacles",
+            "ESC - Return to menu/Quit game",
+            "R - Restart after game over"
+        ]
+        
+        # How to Play section
+        how_to_title = self.font.render("How to Play:", True, (0, 0, 0))
+        how_to_rect = how_to_title.get_rect(center=(self.screen_width//2, 260))
+        
+        how_to = [
+            "1. Press SPACE to start",
+            "2. Jump over cacti to score points",
+            "3. Game ends if you hit an obstacle"
+        ]
+        
+        # Render controls
+        start_y = 170
+        for line in controls:
+            text = instruction_font.render(line, True, (0, 0, 0))
+            rect = text.get_rect(center=(self.screen_width//2, start_y))
+            self.screen.blit(text, rect)
+            start_y += 35
+        
+        # Render how to play
+        start_y = 290
+        for line in how_to:
+            text = instruction_font.render(line, True, (0, 0, 0))
+            rect = text.get_rect(center=(self.screen_width//2, start_y))
+            self.screen.blit(text, rect)
+            start_y += 35
+        
+        # Draw "Press SPACE to Start" at the bottom
         start_text = self.font.render("Press SPACE to Start", True, (0, 0, 0))
-        start_rect = start_text.get_rect(center=(self.screen_width//2, self.screen_height//2))
+        start_rect = start_text.get_rect(center=(self.screen_width//2, self.screen_height - 50))
         
-        controls_text = self.font.render("SPACE to Jump, ESC to Quit", True, (0, 0, 0))
-        controls_rect = controls_text.get_rect(center=(self.screen_width//2, self.screen_height*2//3))
-        
+        # Draw everything
         self.screen.blit(title_text, title_rect)
+        self.screen.blit(controls_title, controls_rect)
+        self.screen.blit(how_to_title, how_to_rect)
         self.screen.blit(start_text, start_rect)
-        self.screen.blit(controls_text, controls_rect)
 
     def draw_game_over(self):
         # Semi-transparent overlay
