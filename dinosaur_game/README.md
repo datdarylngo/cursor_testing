@@ -18,4 +18,18 @@ A simple dinosaur running game where you jump over obstacles to achieve the high
 
 ## Running the Game
 
-1. Install dependencies:
+1. Install dependencies (from the project root):
+```
+pip3 install pygame
+```
+or
+```
+pip install pygame
+```
+
+2. Start the game:
+```
+python3 dinosaur_game/src/game.py
+```
+
+Make sure to run these commands from the root directory of the project.

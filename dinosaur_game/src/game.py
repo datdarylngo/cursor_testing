@@ -1,7 +1,7 @@
 import pygame
 import sys
-from .player import Dinosaur
-from .obstacles import Cactus
+from player import Dinosaur
+from obstacles import Cactus
 import random
 
 class DinosaurGame:
