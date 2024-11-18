@@ -22,10 +22,6 @@ A simple dinosaur running game where you jump over obstacles to achieve the high
 ```
 pip3 install pygame
 ```
-or
-```
-pip install pygame
-```
 
 2. Start the game:
 ```
